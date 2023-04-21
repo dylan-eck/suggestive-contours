@@ -265,6 +265,11 @@ int main(void)
         glm::vec3(2.0f)
     );
 
+    GLuint postProcessingProg = createShader(
+        "./shaders/screen_quad.vert.glsl",
+        "./shaders/screen_quad.frag.glsl"
+    );
+
     // shader program for rendering light sources
     GLuint basicProg = createShader(
         "./shaders/basic.vert.glsl",
@@ -434,6 +439,10 @@ int main(void)
 
         renderer.setShaderProgram(modelProg);
         renderer.drawModel(model);
+
+        glUseProgram(postProcessingProg);
+        glBindVertexArray(-1);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
