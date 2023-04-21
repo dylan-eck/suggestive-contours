@@ -34,12 +34,6 @@ layout(std140, binding = 2) uniform lightingUBO {
     float outerCutoff;
 };
 
-vec3 blinnPhongSpecular(vec3 dirToLight, vec3 viewNormal, vec3 viewDir) {
-    vec3 halfway = normalize(dirToLight + viewDir);
-    vec3 specularIntensity = specularReflectivity * pow(max(dot(halfway, viewNormal), 0.0), shininess);
-    return specularIntensity;
-}
-
 void main(){
     vec3 fragPos = vertDataIn.position;
     vec3 fragNormal = vertDataIn.normal;
@@ -55,17 +49,11 @@ void main(){
     dirToLight = normalize(dirToLight);
 
     vec3 viewDir = normalize(-viewFragPos);
-
     vec3 diffuseIntensity = diffuseReflectivity * max(dot(dirToLight, viewFragNormal), 0.0);
-    vec3 specularIntensity = blinnPhongSpecular(dirToLight, viewFragNormal, viewDir);
-
-    // make light intensity decrease with distance from the light source
-    float attenuation = clamp(1.0 - (lightDist * lightDist) / (attenuationRadius * attenuationRadius), 0.0, 1.0);
-    attenuation *= attenuation;
 
     // combine light components
     // use lighting from spot light, unless it is less than the ambient light
-    vec3 light = max(attenuation * (diffuseIntensity + specularIntensity), ambientReflectivity * ambientIntensity);
+    vec3 light = max(diffuseIntensity, ambientReflectivity * ambientIntensity);
 
-    color = vec4(light, 1.0);
+    color = vec4(vec3(max(dot(viewDir, viewFragNormal), 0.0)), 1.0);
 }

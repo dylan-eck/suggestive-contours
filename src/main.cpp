@@ -337,7 +337,7 @@ int main(void)
     // only materials that lighting is applied to
     glm::vec3 lightPosition = glm::vec3(0.0f, 5.9f, 4.0f);
     glm::vec3 lightDirection = glm::vec3(0.0f, -1.0f, -0.7f);
-    glm::vec3 ambientIntensity = glm::vec3(0.1f);
+    glm::vec3 ambientIntensity = glm::vec3(0.0f);
     float attenuationRadius = 30.0f;
     float innerCutoff = 0.93f;
     float outerCutoff = 0.90f;
@@ -367,7 +367,7 @@ int main(void)
     // set up renderer
     Renderer renderer;
     glEnable(GL_DEPTH_TEST);
-    glClearColor(0.2, 0.2, 0.2, 1.0);
+    glClearColor(1.0, 1.0, 1.0, 1.0);
 
     // main rendering loop
     while (!glfwWindowShouldClose(window)) {
@@ -434,10 +434,6 @@ int main(void)
 
         renderer.setShaderProgram(modelProg);
         renderer.drawModel(model);
-
-        // draw light source
-        renderer.setShaderProgram(basicProg);
-        renderer.drawModel(sphere);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
