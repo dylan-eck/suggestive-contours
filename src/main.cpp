@@ -362,6 +362,9 @@ int main(void)
 
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
+    // based on:
+    // https://learnopengl.com/Advanced-OpenGL/Framebuffers
+
     GLuint framebuffer;
     glGenFramebuffers(1, &framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
