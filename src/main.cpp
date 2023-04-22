@@ -209,7 +209,7 @@ void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
 // this function creates the window title which displays the current
 // lighting calculating method
 void makeWindowTitle(GLFWwindow* window) {
-    std::string title = "Dylan Eck - CSCI544 Assignment 2";
+    std::string title = "suggestive-contours";
 
     glfwSetWindowTitle(window, title.c_str());
 }
@@ -223,7 +223,7 @@ int main(void)
 
     if (!glfwInit()) exit(EXIT_FAILURE);
 
-    int width = 720;
+    int width = 640;
     int height = 480;
     GLFWwindow* window = glfwCreateWindow(width, height, "", NULL, NULL);
     if (!window) {
@@ -259,7 +259,7 @@ int main(void)
                 glm::mat4(1.0f),
                 glm::vec3(0.0f, 3.0f, 0.0f)
             ),
-            glm::radians(-30.0f),
+            glm::radians(0.0f),
             glm::vec3(1.0f, 0.0f, 0.0f)
         ),
         glm::vec3(20.0f)
