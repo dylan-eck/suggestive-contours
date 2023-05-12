@@ -260,169 +260,12 @@ int main(void)
         glm::vec3(20.0f)
     );
 
-    // size_t vertexCount = model.vertexData.size() / 3;
-
-    // // construct adjacency list
-    // std::vector<std::unordered_set<uint32_t>> adjList(vertexCount);
-    // for (size_t i = 0; i < model.indexData.size(); i += 3) {
-    //     uint32_t idx1 = model.indexData[i];
-    //     uint32_t idx2 = model.indexData[i + 1];
-    //     uint32_t idx3 = model.indexData[i + 2];
-
-    //     adjList[idx1].insert(idx2);
-    //     adjList[idx1].insert(idx3);
-    //     adjList[idx2].insert(idx1);
-    //     adjList[idx2].insert(idx3);
-    //     adjList[idx3].insert(idx1);
-    //     adjList[idx3].insert(idx2);
-    // }
-
-    // std::cout << adjList.size() << std::endl;
-
-    // // find duplicated vertices
-    // std::unordered_map<int, std::vector<int>> uniqueVerticesMap;
-    // for (int i = 0; i < model.indexData.size(); i++) {
-    //     int index = model.indexData[i];
-    //     bool isDuplicate = false;
-    //     int duplicateIndex = -1;
-
-    //     for (const auto& pair : uniqueVerticesMap) {
-    //         int j = pair.first;
-    //         if (
-    //             model.vertexData[index * 3 + 0] == model.vertexData[j * 3 + 0] &&
-    //             model.vertexData[index * 3 + 1] == model.vertexData[j * 3 + 1] &&
-    //             model.vertexData[index * 3 + 2] == model.vertexData[j * 3 + 2]
-    //         ) {
-    //             isDuplicate = true;
-    //             duplicateIndex = j;
-    //             break;
-    //         }
-    //     }
-
-    //     if (!isDuplicate) {
-    //         uniqueVerticesMap[index] = std::vector<int>();
-    //     } else {
-    //         uniqueVerticesMap[duplicateIndex].push_back(index);
-    //     }
-    // }
-
-    // int iterations = 30;
-    // float lambda = 0.33;
-    // float mu = -0.34;
-
-    // for (int k = 0; k < iterations; k ++) {
-    //     std::unordered_map<int, glm::vec3> newVertexPositions;
-    //     for (const auto& pair : uniqueVerticesMap) {
-    //         int vertexIndex = pair.first;
-
-    //         glm::vec3 Vi = {
-    //             model.vertexData[vertexIndex * 3 + 0],
-    //             model.vertexData[vertexIndex * 3 + 1],
-    //             model.vertexData[vertexIndex * 3 + 2]
-    //         };
-
-    //         std::unordered_set<uint32_t> neighbors = adjList[vertexIndex];
-    //         float Wij = 1 / neighbors.size();
-
-    //         glm::vec3 deltaVi(0);
-
-    //         for (const auto& index : neighbors) {
-    //             glm::vec3 Vj = {
-    //                 model.vertexData[index * 3 + 0],
-    //                 model.vertexData[index * 3 + 1],
-    //                 model.vertexData[index * 3 + 2]
-    //             };
-
-    //             deltaVi += Wij * (Vj - Vi);
-    //         }
-
-    //         newVertexPositions[vertexIndex] = Vi + lambda * deltaVi;
-    //     }
-
-    //     // update vertices
-    //     for (const auto& pair : newVertexPositions) {
-    //         int vertexIndex = pair.first;
-    //         glm::vec3 newPosition = newVertexPositions[vertexIndex];
-    //         model.vertexData[vertexIndex * 3 + 0] = newPosition.x;
-    //         model.vertexData[vertexIndex * 3 + 1] = newPosition.y;
-    //         model.vertexData[vertexIndex * 3 + 2] = newPosition.z;
-
-    //         std::vector<int> duplicateVertexIndices = uniqueVerticesMap[vertexIndex];
-    //         for (const auto& index : duplicateVertexIndices) {
-    //             model.vertexData[index * 3 + 0] = newPosition.x;
-    //             model.vertexData[index * 3 + 1] = newPosition.y;
-    //             model.vertexData[index * 3 + 2] = newPosition.z;
-    //         }
-    //     }
-
-    //     newVertexPositions.clear();
-    //     for (const auto& pair : uniqueVerticesMap) {
-    //         int vertexIndex = pair.first;
-
-    //         glm::vec3 Vi = {
-    //             model.vertexData[vertexIndex * 3 + 0],
-    //             model.vertexData[vertexIndex * 3 + 1],
-    //             model.vertexData[vertexIndex * 3 + 2]
-    //         };
-
-    //         std::unordered_set<uint32_t> neighbors = adjList[vertexIndex];
-    //         float Wij = 1 / neighbors.size();
-
-    //         glm::vec3 deltaVi(0);
-
-    //         for (const auto& index : neighbors) {
-    //             glm::vec3 Vj = {
-    //                 model.vertexData[index * 3 + 0],
-    //                 model.vertexData[index * 3 + 1],
-    //                 model.vertexData[index * 3 + 2]
-    //             };
-
-    //             deltaVi += Wij * (Vj - Vi);
-    //         }
-
-    //         newVertexPositions[vertexIndex] = Vi + mu * deltaVi;
-    //     }
-
-    //     // update vertices
-    //     for (const auto& pair : newVertexPositions) {
-    //         int vertexIndex = pair.first;
-    //         glm::vec3 newPosition = newVertexPositions[vertexIndex];
-    //         model.vertexData[vertexIndex * 3 + 0] = newPosition.x;
-    //         model.vertexData[vertexIndex * 3 + 1] = newPosition.y;
-    //         model.vertexData[vertexIndex * 3 + 2] = newPosition.z;
-
-    //         std::vector<int> duplicateVertexIndices = uniqueVerticesMap[vertexIndex];
-    //         for (const auto& index : duplicateVertexIndices) {
-    //             model.vertexData[index * 3 + 0] = newPosition.x;
-    //             model.vertexData[index * 3 + 1] = newPosition.y;
-    //             model.vertexData[index * 3 + 2] = newPosition.z;
-    //         }
-    //     }
-    // }
-
-    // for (int i = 0; i < model.vertexData.size(); i += 3) {
-    //     std::cout
-    //         << model.vertexData[i + 0] << " "
-    //         << model.vertexData[i + 1] << " "
-    //         << model.vertexData[i + 2] << std::endl;
-    // }
-
     model.initGPUresources();
 
     GLuint sg_img_prog = createShader(
         "./shaders/sg_img.vert.glsl",
         "./shaders/sg_img.frag.glsl"
     );
-
-    GLuint median_filter_prog = createShader(
-        "./shaders/screen_quad.vert.glsl",
-        "./shaders/screen_quad.frag.glsl"
-    );
-
-    // GLuint sq_passthrough_prog = createShader(
-    //     "./shaders/screen_quad.vert.glsl",
-    //     "./shaders/screen_quad.frag.glsl"
-    // );
 
     // shader program for the main model and lit portion of the ground plain
     // uses per-fragment shading
@@ -438,7 +281,13 @@ int main(void)
     float scrollSensitivity = 5.0;
 
     Camera camera;
-    camera.position = glm::vec3(-5.0f, 5.0f, 8.0f);
+
+    float radius = 5.0f;
+    float theta = glm::radians(140.0f);
+    float x = radius * glm::cos(theta);
+    float z = radius * glm::sin(theta);
+
+    camera.position = glm::vec3(x, 5.0f, z);
     camera.target = glm::vec3(0.0f, 3.0f, 0.0f);
     camera.upVector = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -580,35 +429,6 @@ int main(void)
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-
-    GLuint postFramebufferB;
-    glGenFramebuffers(1, &postFramebufferB);
-    glBindFramebuffer(GL_FRAMEBUFFER, postFramebufferB);
-
-    GLuint postTextureB;
-    glGenTextures(1, &postTextureB);
-    glBindTexture(GL_TEXTURE_2D, postTextureB);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, vpWidth, vpHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, postTextureB, 0);
-
-    GLuint postRboB;
-    glGenRenderbuffers(1, &postRboB);
-    glBindRenderbuffer(GL_RENDERBUFFER, postRboB);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, vpWidth, vpHeight);
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, postRboB);
-
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        printf("error: post processing frame buffer a incomplete.\n");
-    }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
     // ### imgui setup
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -693,28 +513,19 @@ int main(void)
         renderer.setShaderProgram(modelProg);
         renderer.drawModel(model);
 
-        // post processing part 1
-        glBindFramebuffer(GL_FRAMEBUFFER, postFramebufferB);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // post processing
+        glBindFramebuffer(GL_FRAMEBUFFER, vpFramebuffer);
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glDisable(GL_DEPTH_TEST);
         glUseProgram(sg_img_prog);
         glUniform1f(glGetUniformLocation(sg_img_prog, "r"), r);
         glUniform1f(glGetUniformLocation(sg_img_prog, "s"), s);
         glUniform1f(glGetUniformLocation(sg_img_prog, "d"), d);
         glBindVertexArray(-1);
-        glDisable(GL_DEPTH_TEST);
         glBindTexture(GL_TEXTURE_2D, postTextureA);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        // post processing part 2
-        glBindFramebuffer(GL_FRAMEBUFFER, vpFramebuffer);
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        glUseProgram(median_filter_prog);
-        glBindVertexArray(-1);
-        glDisable(GL_DEPTH_TEST);
-        glBindTexture(GL_TEXTURE_2D, postTextureB);
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -746,11 +557,6 @@ int main(void)
             glBindTexture(GL_TEXTURE_2D, postTextureA);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, vpWidth, vpHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
             glBindRenderbuffer(GL_RENDERBUFFER, postRboA);
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, vpWidth, vpHeight);
-
-            glBindTexture(GL_TEXTURE_2D, postTextureB);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, vpWidth, vpHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-            glBindRenderbuffer(GL_RENDERBUFFER, postRboB);
             glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, vpWidth, vpHeight);
         }
         ImGui::Image((void *)(intptr_t)vpTexture, ImVec2(vpWidth, vpHeight), ImVec2(0, 1), ImVec2(1, 0));
