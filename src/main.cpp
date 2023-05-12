@@ -4,6 +4,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/constants.hpp>
 
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
@@ -15,6 +19,8 @@
 #include <unistd.h>
 #include <stdexcept>
 #include <optional>
+#include <unordered_map>
+#include <unordered_set>
 
 #include "Renderer.hpp"
 #include "Model.hpp"
@@ -223,8 +229,8 @@ int main(void)
 
     if (!glfwInit()) exit(EXIT_FAILURE);
 
-    int width = 640;
-    int height = 480;
+    int width = 1280;
+    int height = 720;
     GLFWwindow* window = glfwCreateWindow(width, height, "", NULL, NULL);
     if (!window) {
         glfwTerminate();
@@ -240,17 +246,6 @@ int main(void)
 
     gladLoadGL();
 
-    // sphere model used for skybox and rendering lights
-    Model sphere = Model::fromOBJ("../../models/sphere.obj");
-    GLuint sphereVao = sphere.vao;
-
-    // quad used for lit portion of ground plane
-    Model quad = Model::fromOBJ("../../models/quad.obj");
-    GLuint quadVao = quad.vao;
-    quad.modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(21.0f));
-
-    // main model used to show the differences between different methods of
-    // calculating lighting
     Model model = Model::fromOBJ("../../models/bunny.obj");
     GLuint modelVao = model.vao;
     model.modelMatrix = glm::scale(
@@ -265,16 +260,169 @@ int main(void)
         glm::vec3(20.0f)
     );
 
-    GLuint postProcessingProg = createShader(
+    // size_t vertexCount = model.vertexData.size() / 3;
+
+    // // construct adjacency list
+    // std::vector<std::unordered_set<uint32_t>> adjList(vertexCount);
+    // for (size_t i = 0; i < model.indexData.size(); i += 3) {
+    //     uint32_t idx1 = model.indexData[i];
+    //     uint32_t idx2 = model.indexData[i + 1];
+    //     uint32_t idx3 = model.indexData[i + 2];
+
+    //     adjList[idx1].insert(idx2);
+    //     adjList[idx1].insert(idx3);
+    //     adjList[idx2].insert(idx1);
+    //     adjList[idx2].insert(idx3);
+    //     adjList[idx3].insert(idx1);
+    //     adjList[idx3].insert(idx2);
+    // }
+
+    // std::cout << adjList.size() << std::endl;
+
+    // // find duplicated vertices
+    // std::unordered_map<int, std::vector<int>> uniqueVerticesMap;
+    // for (int i = 0; i < model.indexData.size(); i++) {
+    //     int index = model.indexData[i];
+    //     bool isDuplicate = false;
+    //     int duplicateIndex = -1;
+
+    //     for (const auto& pair : uniqueVerticesMap) {
+    //         int j = pair.first;
+    //         if (
+    //             model.vertexData[index * 3 + 0] == model.vertexData[j * 3 + 0] &&
+    //             model.vertexData[index * 3 + 1] == model.vertexData[j * 3 + 1] &&
+    //             model.vertexData[index * 3 + 2] == model.vertexData[j * 3 + 2]
+    //         ) {
+    //             isDuplicate = true;
+    //             duplicateIndex = j;
+    //             break;
+    //         }
+    //     }
+
+    //     if (!isDuplicate) {
+    //         uniqueVerticesMap[index] = std::vector<int>();
+    //     } else {
+    //         uniqueVerticesMap[duplicateIndex].push_back(index);
+    //     }
+    // }
+
+    // int iterations = 30;
+    // float lambda = 0.33;
+    // float mu = -0.34;
+
+    // for (int k = 0; k < iterations; k ++) {
+    //     std::unordered_map<int, glm::vec3> newVertexPositions;
+    //     for (const auto& pair : uniqueVerticesMap) {
+    //         int vertexIndex = pair.first;
+
+    //         glm::vec3 Vi = {
+    //             model.vertexData[vertexIndex * 3 + 0],
+    //             model.vertexData[vertexIndex * 3 + 1],
+    //             model.vertexData[vertexIndex * 3 + 2]
+    //         };
+
+    //         std::unordered_set<uint32_t> neighbors = adjList[vertexIndex];
+    //         float Wij = 1 / neighbors.size();
+
+    //         glm::vec3 deltaVi(0);
+
+    //         for (const auto& index : neighbors) {
+    //             glm::vec3 Vj = {
+    //                 model.vertexData[index * 3 + 0],
+    //                 model.vertexData[index * 3 + 1],
+    //                 model.vertexData[index * 3 + 2]
+    //             };
+
+    //             deltaVi += Wij * (Vj - Vi);
+    //         }
+
+    //         newVertexPositions[vertexIndex] = Vi + lambda * deltaVi;
+    //     }
+
+    //     // update vertices
+    //     for (const auto& pair : newVertexPositions) {
+    //         int vertexIndex = pair.first;
+    //         glm::vec3 newPosition = newVertexPositions[vertexIndex];
+    //         model.vertexData[vertexIndex * 3 + 0] = newPosition.x;
+    //         model.vertexData[vertexIndex * 3 + 1] = newPosition.y;
+    //         model.vertexData[vertexIndex * 3 + 2] = newPosition.z;
+
+    //         std::vector<int> duplicateVertexIndices = uniqueVerticesMap[vertexIndex];
+    //         for (const auto& index : duplicateVertexIndices) {
+    //             model.vertexData[index * 3 + 0] = newPosition.x;
+    //             model.vertexData[index * 3 + 1] = newPosition.y;
+    //             model.vertexData[index * 3 + 2] = newPosition.z;
+    //         }
+    //     }
+
+    //     newVertexPositions.clear();
+    //     for (const auto& pair : uniqueVerticesMap) {
+    //         int vertexIndex = pair.first;
+
+    //         glm::vec3 Vi = {
+    //             model.vertexData[vertexIndex * 3 + 0],
+    //             model.vertexData[vertexIndex * 3 + 1],
+    //             model.vertexData[vertexIndex * 3 + 2]
+    //         };
+
+    //         std::unordered_set<uint32_t> neighbors = adjList[vertexIndex];
+    //         float Wij = 1 / neighbors.size();
+
+    //         glm::vec3 deltaVi(0);
+
+    //         for (const auto& index : neighbors) {
+    //             glm::vec3 Vj = {
+    //                 model.vertexData[index * 3 + 0],
+    //                 model.vertexData[index * 3 + 1],
+    //                 model.vertexData[index * 3 + 2]
+    //             };
+
+    //             deltaVi += Wij * (Vj - Vi);
+    //         }
+
+    //         newVertexPositions[vertexIndex] = Vi + mu * deltaVi;
+    //     }
+
+    //     // update vertices
+    //     for (const auto& pair : newVertexPositions) {
+    //         int vertexIndex = pair.first;
+    //         glm::vec3 newPosition = newVertexPositions[vertexIndex];
+    //         model.vertexData[vertexIndex * 3 + 0] = newPosition.x;
+    //         model.vertexData[vertexIndex * 3 + 1] = newPosition.y;
+    //         model.vertexData[vertexIndex * 3 + 2] = newPosition.z;
+
+    //         std::vector<int> duplicateVertexIndices = uniqueVerticesMap[vertexIndex];
+    //         for (const auto& index : duplicateVertexIndices) {
+    //             model.vertexData[index * 3 + 0] = newPosition.x;
+    //             model.vertexData[index * 3 + 1] = newPosition.y;
+    //             model.vertexData[index * 3 + 2] = newPosition.z;
+    //         }
+    //     }
+    // }
+
+    // for (int i = 0; i < model.vertexData.size(); i += 3) {
+    //     std::cout
+    //         << model.vertexData[i + 0] << " "
+    //         << model.vertexData[i + 1] << " "
+    //         << model.vertexData[i + 2] << std::endl;
+    // }
+
+    model.initGPUresources();
+
+    GLuint sg_img_prog = createShader(
+        "./shaders/sg_img.vert.glsl",
+        "./shaders/sg_img.frag.glsl"
+    );
+
+    GLuint median_filter_prog = createShader(
         "./shaders/screen_quad.vert.glsl",
         "./shaders/screen_quad.frag.glsl"
     );
 
-    // shader program for rendering light sources
-    GLuint basicProg = createShader(
-        "./shaders/basic.vert.glsl",
-        "./shaders/basic.frag.glsl"
-    );
+    // GLuint sq_passthrough_prog = createShader(
+    //     "./shaders/screen_quad.vert.glsl",
+    //     "./shaders/screen_quad.frag.glsl"
+    // );
 
     // shader program for the main model and lit portion of the ground plain
     // uses per-fragment shading
@@ -293,6 +441,14 @@ int main(void)
     camera.position = glm::vec3(-5.0f, 5.0f, 8.0f);
     camera.target = glm::vec3(0.0f, 3.0f, 0.0f);
     camera.upVector = glm::vec3(0.0f, 1.0f, 0.0f);
+
+    // set projection to main model projection (finite far plane)
+    camera.setProjection(
+        45.0f,
+        (float)width / (float)height,
+        0.3f,
+        std::optional<float>(100.0f)
+    );
 
     // viewport matrix
     float half_width = width / 2.0f;
@@ -362,39 +518,115 @@ int main(void)
 
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-    // based on:
-    // https://learnopengl.com/Advanced-OpenGL/Framebuffers
+    // ### vieport framebuffer setup
+    GLuint vpFramebuffer;
+    glGenFramebuffers(1, &vpFramebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, vpFramebuffer);
 
-    GLuint framebuffer;
-    glGenFramebuffers(1, &framebuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-
-    GLuint textureColorbuffer;
-    glGenTextures(1, &textureColorbuffer);
-    glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    GLuint vpTexture;
+    int vpWidth = 400;
+    int vpHeight = 400;
+    glGenTextures(1, &vpTexture);
+    glBindTexture(GL_TEXTURE_2D, vpTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, vpWidth, vpHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, vpTexture, 0);
 
-    GLuint rbo;
-    glGenRenderbuffers(1, &rbo);
-    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+    GLuint vpRbo;
+    glGenRenderbuffers(1, &vpRbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, vpRbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, vpWidth, vpHeight);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, vpRbo);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        printf("error: post processing frame buffer incomplete.\n");
+        printf("error: viewport frame buffer incomplete.\n");
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    // based on:
+    // https://learnopengl.com/Advanced-OpenGL/Framebuffers
+
+    // ### post processing frambuffer setup
+    GLuint postFramebufferA;
+    glGenFramebuffers(1, &postFramebufferA);
+    glBindFramebuffer(GL_FRAMEBUFFER, postFramebufferA);
+
+    GLuint postTextureA;
+    glGenTextures(1, &postTextureA);
+    glBindTexture(GL_TEXTURE_2D, postTextureA);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, vpWidth, vpHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, postTextureA, 0);
+
+    GLuint postRboA;
+    glGenRenderbuffers(1, &postRboA);
+    glBindRenderbuffer(GL_RENDERBUFFER, postRboA);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, vpWidth, vpHeight);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, postRboA);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        printf("error: post processing frame buffer b incomplete.\n");
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+    GLuint postFramebufferB;
+    glGenFramebuffers(1, &postFramebufferB);
+    glBindFramebuffer(GL_FRAMEBUFFER, postFramebufferB);
+
+    GLuint postTextureB;
+    glGenTextures(1, &postTextureB);
+    glBindTexture(GL_TEXTURE_2D, postTextureB);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, vpWidth, vpHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, postTextureB, 0);
+
+    GLuint postRboB;
+    glGenRenderbuffers(1, &postRboB);
+    glBindRenderbuffer(GL_RENDERBUFFER, postRboB);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, vpWidth, vpHeight);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, postRboB);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        printf("error: post processing frame buffer a incomplete.\n");
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // ### imgui setup
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO &imgui_io = ImGui::GetIO(); (void)imgui_io;
+    imgui_io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    ImGui::StyleColorsDark();
+
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 330 core");
+
     // set up renderer
     Renderer renderer;
+
+    float r = 4.0;
+    float s = 0.5;
+    float d = 0.05;
+
+    bool viewportIsFocused = false;
 
     // main rendering loop
     while (!glfwWindowShouldClose(window)) {
@@ -404,7 +636,7 @@ int main(void)
         glm::mat4 view = camera.getViewMatrix();
 
         // compute camera movement from mouse dragging
-        if (mousePressed) {
+        if (mousePressed && viewportIsFocused) {
             glfwGetCursorPos(window, &mx, &my);
 
             dmx = -(mx - mxPrev);
@@ -430,7 +662,7 @@ int main(void)
         }
 
         // compute camera movement from scrolling
-        if (abs(scrollOffset) > 0.5) {
+        if (abs(scrollOffset) > 0.5 && viewportIsFocused) {
             glm::vec4 viewDir = -glm::transpose(view)[2];
             glm::vec3 offset = glm::vec3(glm::normalize(viewDir * (float)scrollOffset));
             offset *= scrollSensitivity;
@@ -438,17 +670,12 @@ int main(void)
             scrollOffset = 0;
         }
 
-        // set projection to main model projection (finite far plane)
         camera.setProjection(
             45.0f,
-            (float)width / (float)height,
+            (float)vpWidth / (float)vpHeight,
             0.3f,
             std::optional<float>(100.0f)
         );
-
-        glBindBuffer(GL_UNIFORM_BUFFER, globalUBOHandle);
-        glBufferSubData(GL_UNIFORM_BUFFER, 64, 64, &camera.projectionMatrix[0][0]);
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
         // update global ubo to account for camera movement
         glBindBuffer(GL_UNIFORM_BUFFER, globalUBOHandle);
@@ -456,9 +683,9 @@ int main(void)
         glBufferSubData(GL_UNIFORM_BUFFER, 64, 64, &camera.projectionMatrix[0][0]);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-        glViewport(0, 0, width, height);
+        glViewport(0, 0, vpWidth, vpHeight);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, postFramebufferA);
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
@@ -466,19 +693,80 @@ int main(void)
         renderer.setShaderProgram(modelProg);
         renderer.drawModel(model);
 
-        // post processing
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        // post processing part 1
+        glBindFramebuffer(GL_FRAMEBUFFER, postFramebufferB);
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        glUseProgram(postProcessingProg);
+        glUseProgram(sg_img_prog);
+        glUniform1f(glGetUniformLocation(sg_img_prog, "r"), r);
+        glUniform1f(glGetUniformLocation(sg_img_prog, "s"), s);
+        glUniform1f(glGetUniformLocation(sg_img_prog, "d"), d);
         glBindVertexArray(-1);
         glDisable(GL_DEPTH_TEST);
-        glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+        glBindTexture(GL_TEXTURE_2D, postTextureA);
         glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // post processing part 2
+        glBindFramebuffer(GL_FRAMEBUFFER, vpFramebuffer);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glUseProgram(median_filter_prog);
+        glBindVertexArray(-1);
+        glDisable(GL_DEPTH_TEST);
+        glBindTexture(GL_TEXTURE_2D, postTextureB);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        ImGuiViewport *viewport = ImGui::GetMainViewport();
+        ImGui::DockSpaceOverViewport();
+
+        ImGui::Begin("Contour Parameters");
+        ImGui::DragFloat("r", &r, 0.01f, 0.0f, 0.0f, "%.2f");
+        ImGui::DragFloat("s", &s, 0.01f, 0.0f, 0.0f, "%.2f");
+        ImGui::DragFloat("d", &d, 0.001f, 0.0f, 0.0f, "%.3f");
+        ImGui::End();
+
+        ImGui::Begin("viewport");
+        ImVec2 windowSize = ImGui::GetContentRegionAvail();
+        viewportIsFocused = ImGui::IsWindowFocused();
+
+        if (windowSize.x != vpWidth || windowSize.y != vpHeight) {
+            vpWidth = static_cast<int>(windowSize.x);
+            vpHeight = static_cast<int>(windowSize.y);
+            glBindTexture(GL_TEXTURE_2D, vpTexture);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, vpWidth, vpHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+            glBindRenderbuffer(GL_RENDERBUFFER, vpRbo);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, vpWidth, vpHeight);
+
+            glBindTexture(GL_TEXTURE_2D, postTextureA);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, vpWidth, vpHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+            glBindRenderbuffer(GL_RENDERBUFFER, postRboA);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, vpWidth, vpHeight);
+
+            glBindTexture(GL_TEXTURE_2D, postTextureB);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, vpWidth, vpHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+            glBindRenderbuffer(GL_RENDERBUFFER, postRboB);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, vpWidth, vpHeight);
+        }
+        ImGui::Image((void *)(intptr_t)vpTexture, ImVec2(vpWidth, vpHeight), ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::End();
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     glfwTerminate();
     exit(EXIT_SUCCESS);

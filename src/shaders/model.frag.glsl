@@ -38,22 +38,9 @@ void main(){
     vec3 fragPos = vertDataIn.position;
     vec3 fragNormal = vertDataIn.normal;
 
-    // lighting calculations are performed in view space
-    // so that it is easy to find the direction to the viewer
     vec3 viewFragPos = (viewMatrix * mMat * vec4(fragPos, 1.0)).xyz;
     vec3 viewFragNormal = normalize((viewMatrix * mMat * vec4(fragNormal, 0.0)).xyz);
-
-    vec3 viewLightPos = (viewMatrix * vec4(lightPosition, 1.0)).xyz;
-    vec3 dirToLight = viewLightPos - viewFragPos;
-    float lightDist = length(dirToLight);
-    dirToLight = normalize(dirToLight);
-
     vec3 viewDir = normalize(-viewFragPos);
-    vec3 diffuseIntensity = diffuseReflectivity * max(dot(dirToLight, viewFragNormal), 0.0);
-
-    // combine light components
-    // use lighting from spot light, unless it is less than the ambient light
-    vec3 light = max(diffuseIntensity, ambientReflectivity * ambientIntensity);
 
     color = vec4(vec3(max(dot(viewDir, viewFragNormal), 0.0)), 1.0);
 }

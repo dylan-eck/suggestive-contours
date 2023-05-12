@@ -9,7 +9,7 @@ set(CMAKE_CXX_COMPILER "C:/Program Files/w64devkit/bin/g++.exe")
 set(glm_DIR "C:/Program Files/GLM/lib/cmake/glm")
 set(glfw3_DIR "C:/Program Files/GLFW/lib/cmake/glfw3")
 
-project(dylanEck_A2)
+project(suggestive-contours)
 
 find_package(glm CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
@@ -19,4 +19,3 @@ include_directories(glad)
 
 add_subdirectory(glad)
 add_subdirectory(src)
-

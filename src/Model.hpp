@@ -1,8 +1,6 @@
 #ifndef MODEL_HPP
 #define MODEL_HPP
 
-// this class is used to handle loading models to be rendered
-
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 
@@ -10,8 +8,9 @@
 
 class Model {
 public:
-    // this function loads a model from a .obj file
     static Model fromOBJ(const char* filePath);
+
+    void initGPUresources();
 
     std::vector<float> vertexData;
     std::vector<float> colorData;
