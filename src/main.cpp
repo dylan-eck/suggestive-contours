@@ -442,8 +442,8 @@ int main(void)
     // set up renderer
     Renderer renderer;
 
-    float r = 4.0;
-    float s = 0.5;
+    float r = 4.81;
+    float s = 0.77;
     float d = 0.05;
 
     bool viewportIsFocused = false;
