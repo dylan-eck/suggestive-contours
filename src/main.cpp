@@ -536,12 +536,14 @@ int main(void)
         ImGuiViewport *viewport = ImGui::GetMainViewport();
         ImGui::DockSpaceOverViewport();
 
+        ImGui::SetNextWindowSizeConstraints(ImVec2(200, 600), ImVec2(FLT_MAX, FLT_MAX));
         ImGui::Begin("Contour Parameters");
         ImGui::DragFloat("r", &r, 0.01f, 0.0f, 0.0f, "%.2f");
         ImGui::DragFloat("s", &s, 0.01f, 0.0f, 0.0f, "%.2f");
         ImGui::DragFloat("d", &d, 0.001f, 0.0f, 0.0f, "%.3f");
         ImGui::End();
 
+        ImGui::SetNextWindowSizeConstraints(ImVec2(480, 480), ImVec2(FLT_MAX, FLT_MAX));
         ImGui::Begin("viewport");
         ImVec2 windowSize = ImGui::GetContentRegionAvail();
         viewportIsFocused = ImGui::IsWindowFocused();
