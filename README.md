@@ -1,5 +1,7 @@
 # Suggestive Contours
 
+![GIF of the program running, displaying a 3D model of a bunny rendered as line art using the technique described in the paper mentioned below.](/assets/demo.gif)
+
 ## About
 
 This is an implementation of the paper "Suggestive Contours for Conveying Shape" published in "ACM Transactions on Graphics (TOG), Volume 22, Issue 3"
