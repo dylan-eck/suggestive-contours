@@ -8,23 +8,10 @@ This is an implementation of the paper "Suggestive Contours for Conveying Shape"
 
 ## Building and Running
 
-NOTE: Currently, I have only tested this on Fedora via a Distrobox container.
+1. Clone this repository and `cd` into the root directory.
 
-1. Clone this repository
+2. Configure CMake by running `cmake -S . -B build`.
 
-2. Create Distrobox container:
+3. `cd` into the build directory and run `make` to build the project.
 
-    `distrobox create -i fedora:40 -n fedora-dev && distrobox enter fedora-dev`
-
-3. Install dependencies inside the container:
-
-    `sudo dnf install -y glm-devel glfw-devel mesa-libGL-devel libX11-devel libXrandr-devel libXinerama-devel libXcursor-devel libXi-devel gcc-c++ cmake git`
-
-
-4. Navigate to the repository root directory and configure CMake.
-
-    `cmake -S . -B build`
-
-5. Navigate to the build directory and build the project by running `make`.
-
-6. You can then run the executable, which will be located in `/build/src`.
+4. The executable will be in `build/src`. You will need to run it from that location or it wont be able to find the shader files.
