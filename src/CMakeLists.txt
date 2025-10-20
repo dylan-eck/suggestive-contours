@@ -59,5 +59,4 @@ elseif(WIN32)
     target_link_libraries(${TARGET} PRIVATE gdi32)
 endif()
 
-add_subdirectory(shaders)
-
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/shaders" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
