@@ -55,3 +55,5 @@ find_package(OpenGL REQUIRED)
 
 add_subdirectory(glad)
 add_subdirectory(src)
+
+file(COPY "${CMAKE_SOURCE_DIR}/config" DESTINATION "${CMAKE_BINARY_DIR}/src")

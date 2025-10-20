@@ -434,6 +434,7 @@ int main(void)
     ImGui::CreateContext();
     ImGuiIO &imgui_io = ImGui::GetIO(); (void)imgui_io;
     imgui_io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    imgui_io.IniFilename = "./config/imgui.ini";
     ImGui::StyleColorsDark();
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
