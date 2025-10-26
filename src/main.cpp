@@ -178,17 +178,10 @@ GLuint createShader(
     return program;
 }
 
-void keyCallback(GLFWwindow* window, int key, int scancode, int action, int modes) {
 
-}
-
-// these variables keep track of mouse state to help determine if the camera
-// should be moved and by how much
 double mxPrev = 0;
 double myPrev = 0;
 bool mousePressed = false;
-
-// this function updates mouse state variables when left mouse button is pressed
 void mouseCallback(GLFWwindow* window, int button, int action, int mods)
 {
     if (button == GLFW_MOUSE_BUTTON_LEFT) {
@@ -206,17 +199,14 @@ void mouseCallback(GLFWwindow* window, int button, int action, int mods)
     }
 }
 
-// this function keeps track of scrolling which is used for zooming in and out
 double scrollOffset = 0;
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
     scrollOffset = yoffset;
 }
 
-// this function creates the window title which displays the current
-// lighting calculating method
+
 void makeWindowTitle(GLFWwindow* window) {
     std::string title = "suggestive-contours";
-
     glfwSetWindowTitle(window, title.c_str());
 }
 
@@ -240,7 +230,6 @@ int main(void)
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
 
-    glfwSetKeyCallback(window, keyCallback);
     glfwSetMouseButtonCallback(window, mouseCallback);
     glfwSetScrollCallback(window, scrollCallback);
 
@@ -267,8 +256,6 @@ int main(void)
         "./shaders/sg_img.frag.glsl"
     );
 
-    // shader program for the main model and lit portion of the ground plain
-    // uses per-fragment shading
     unsigned int modelProg = createShader(
         "./shaders/model.vert.glsl",
         "./shaders/model.frag.glsl"
@@ -291,7 +278,6 @@ int main(void)
     camera.target = glm::vec3(0.0f, 3.0f, 0.0f);
     camera.upVector = glm::vec3(0.0f, 1.0f, 0.0f);
 
-    // set projection to main model projection (finite far plane)
     camera.setProjection(
         45.0f,
         (float)width / (float)height,
@@ -299,7 +285,6 @@ int main(void)
         std::optional<float>(100.0f)
     );
 
-    // viewport matrix
     float half_width = width / 2.0f;
     float half_height = height / 2.0f;
     glm::mat4 viewportMatrix = glm::mat4(
@@ -309,8 +294,7 @@ int main(void)
         glm::vec4(half_width+0, half_height+0, 0.0f, 1.0f)
     );
 
-    // this uniform buffer object stores the view and projection matrices
-    // these matrices are used by all shaders
+    // transform matrices UBO setup
     GLuint globalUBOHandle;
     glGenBuffers(1, &globalUBOHandle);
     glBindBuffer(GL_UNIFORM_BUFFER, globalUBOHandle);
@@ -323,8 +307,7 @@ int main(void)
 
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-    // this uniform buffer is used to store material properties
-    // only used for objects that lighting is applied to
+    // material info UBO setup
     glm::vec3 ambientReflectivity = glm::vec3(1.0f);
     glm::vec3 diffuseReflectivity = glm::vec3(1.0f);
     glm::vec3 specularReflectivity = glm::vec3(0.8f);
@@ -343,8 +326,7 @@ int main(void)
 
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-    // this uniform buffer object is used to store lighting information
-    // only materials that lighting is applied to
+    // lighting info UBO setup
     glm::vec3 lightPosition = glm::vec3(0.0f, 5.9f, 4.0f);
     glm::vec3 lightDirection = glm::vec3(0.0f, -1.0f, -0.7f);
     glm::vec3 ambientIntensity = glm::vec3(0.0f);
@@ -367,7 +349,7 @@ int main(void)
 
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-    // ### vieport framebuffer setup
+    // viewport framebuffer setup
     GLuint vpFramebuffer;
     glGenFramebuffers(1, &vpFramebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, vpFramebuffer);
@@ -400,7 +382,7 @@ int main(void)
     // based on:
     // https://learnopengl.com/Advanced-OpenGL/Framebuffers
 
-    // ### post processing frambuffer setup
+    // post processing frambuffer setup
     GLuint postFramebufferA;
     glGenFramebuffers(1, &postFramebufferA);
     glBindFramebuffer(GL_FRAMEBUFFER, postFramebufferA);
@@ -429,7 +411,7 @@ int main(void)
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    // ### imgui setup
+    // imgui setup
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO &imgui_io = ImGui::GetIO(); (void)imgui_io;
@@ -440,7 +422,6 @@ int main(void)
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330 core");
 
-    // set up renderer
     Renderer renderer;
 
     float r = 4.81;
@@ -449,11 +430,9 @@ int main(void)
 
     bool viewportIsFocused = false;
 
-    // main rendering loop
     while (!glfwWindowShouldClose(window)) {
         makeWindowTitle(window);
 
-        // process inputs and handle camera input
         glm::mat4 view = camera.getViewMatrix();
 
         // compute camera movement from mouse dragging
