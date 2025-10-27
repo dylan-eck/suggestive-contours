@@ -4,7 +4,7 @@
 
 ## About
 
-This is an implementation of the paper "Suggestive Contours for Conveying Shape" published in "ACM Transactions on Graphics (TOG), Volume 22, Issue 3"
+This is an implementation of the paper ["Suggestive Contours for Conveying Shape" published in "ACM Transactions on Graphics (TOG), Volume 22, Issue 3"](https://gfx.cs.princeton.edu/pubs/DeCarlo_2003_SCF/DeCarlo2003.pdf)
 
 ## Building and Running
 
